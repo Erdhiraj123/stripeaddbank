@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Bank Account</title>
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <h2>Add Bank Account</h2>
+    <form id="bank-account-form">
+        <label for="account_holder_name">Account Holder Name:</label>
+        <input type="text" id="account_holder_name" required><br><br>
+
+        <label for="account_holder_type">Account Holder Type:</label>
+        <input type="text" id="account_holder_type" required><br><br>
+
+        <label for="routing_number">Routing Number:</label>
+        <input type="number" id="routing_number" required><br><br>
+
+        <label for="account_number">Account Number:</label>
+        <input type="number" id="account_number" required><br><br>
+
+        <button type="submit">Add Bank Account</button>
+    </form>
+
+    <script>
+        var stripe = Stripe('{{ publishable_key }}');
+        console.log('{{ publishable_key }}');
+        document.getElementById('bank-account-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            stripe.createToken('bank_account', {
+                country: 'US',
+                currency: 'usd',
+                routing_number: document.getElementById('routing_number').value,
+                account_number: document.getElementById('account_number').value,
+                account_holder_name: document.getElementById('account_holder_name').value,
+                account_holder_type: document.getElementById('account_holder_type').value
+              
+            }).then(function(result) {
+                console.log(account_number); 
+                if (result.error) {
+                    alert(result.error.message);
+                } else {
+                    fetch('/add-bank-account/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        
+                        body: JSON.stringify({
+                            token: result.token.id
+                        })
+                    }).then(function(response) {
+                        return response.json();
+                    }).then(function(data) {
+                        if (data.status === 'success') {
+                            alert('Bank account added successfully!');
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

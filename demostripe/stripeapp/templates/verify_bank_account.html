@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify Your Bank Account</title>
+</head>
+<body>
+    <h2>Verify Your Bank Account</h2>
+    <form id="verify-bank-account-form">
+        <label for="bank_account_id">Bank Account ID:</label>
+        <input type="text" id="bank_account_id" required><br><br>
+
+        <label for="amounts">Amounts Deposited (comma-separated):</label>
+        <input type="text" id="amounts" required><br><br>
+
+        <button type="submit">Verify Bank Account</button>
+    </form>
+
+    <script>
+        document.getElementById('verify-bank-account-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            var bankAccountId = document.getElementById('bank_account_id').value;
+            var amounts = document.getElementById('amounts').value.split(',').map(Number);
+
+            fetch('/verify-bank-account-action/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    bank_account_id: bankAccountId,
+                    amounts: amounts
+                })
+            }).then(function(response) {
+                return response.json();
+            }).then(function(data) {
+                if (data.status === 'success') {
+                    alert('Bank account verified successfully!');
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
